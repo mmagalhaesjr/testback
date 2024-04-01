@@ -1,32 +1,42 @@
 import express from "express";
 import cors from "cors";
 
-const carros = [
-    {marca:'volkswagen',modelo:'rete', carro:'gol'},
-    {marca:'volkswagen',modelo:'sedã', carro:'jetta'},
-    {marca:'chevrolet',modelo:'sedã', carro:'camaro'},
-    {marca:'chevrolet',modelo:'rete', carro:'onix'},
-    {marca:'chevrolet',modelo:'sedã', carro:'prisma'},
-    {marca:'fiat',modelo:'sedã', carro:'siena'},
-    {marca:'fiat',modelo:'rete', carro:'palio'},
-  ]
-
-
 const server = express().use(cors());
 server.use(express.json())
 const PORTA = 4001;
 
+const carros = [
+    { marca: 'volkswagen', modelo: 'rete', carro: 'gol' },
+    { marca: 'volkswagen', modelo: 'sedã', carro: 'jetta' },
+    { marca: 'chevrolet', modelo: 'sedã', carro: 'camaro' },
+    { marca: 'chevrolet', modelo: 'rete', carro: 'onix' },
+    { marca: 'chevrolet', modelo: 'sedã', carro: 'prisma' },
+    { marca: 'fiat', modelo: 'sedã', carro: 'siena' },
+    { marca: 'fiat', modelo: 'rete', carro: 'palio' },
+]
+
 
 //========================================================================
-server.get("/carros",(req,res)=>{
-    res.send(carros); 
+server.get("/carros", (req, res) => {
+
+
+    try {
+        res.send(carros);
+    } catch (error) {
+        res.status(500).send('Erro ao encontrar o carro: ' + error.message);
+    }
 })
 //----------------------------------------------------------------------
-server.post("/carros", (req,res)=>{
+server.post("/carros", (req, res) => {
     const body = req.body
-    carros.push(body)
+    
+    try {
+        carros.push(body);
+        res.status(201).send('carro cadastrado com sucesso');
 
-    res.status(201).send('carro cadastrado com susseço')
+    } catch (error) {
+        res.status(500).send('Erro ao cadastrar o carro: ' + error.message);
+    }
 })
 //----------------------------------------------------------------------
 server.put("/carros", (req, res) => {
@@ -36,13 +46,18 @@ server.put("/carros", (req, res) => {
         objeto.marca.toLowerCase() === marca.toLowerCase()
     );
 
-    res.send(carrosFiltrados);
+    try {
+        res.send(carrosFiltrados);
+    } catch (error) {
+        res.status(500).send('Erro: ' + error.message);
+    }
+
 });
 //========================================================================
 
 
 
 
-server.listen(PORTA, () => { 
+server.listen(PORTA, () => {
     console.log(`*** Servidor rodando na porta ${PORTA} ***`);
 });
