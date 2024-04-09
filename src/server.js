@@ -6,7 +6,6 @@ dotenv.config()
 
 const server = express().use(cors());
 server.use(express.json())
-const PORTA = 4001;
 
 
 
@@ -97,6 +96,8 @@ server.get("/minhasTarefas/:id", async (req, res) => {
 
 // ----------------------------------------------------------------------------
 
+
+const PORTA = process.env.PORTA || 4002;
 
 server.listen(PORTA, () => {
     console.log(`*** Servidor rodando na porta ${PORTA} ***`);
