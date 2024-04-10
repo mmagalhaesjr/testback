@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 
+import joi from "joi";
+import bcrypt from 'bcrypt'
+
+
 import dotenv from "dotenv";
 dotenv.config()
 
@@ -12,8 +16,9 @@ server.use(express.json())
 
 
 const usuarios = [
-    { nome: "marcos", email: 'marcos@marcos', senha: 123 }
+    { nome: "marcos", email: 'marcos@marcos.com', senha: 123 }
 ]
+
 
 const todasTarefas = [
     { id: 1, nomeTarefa: "criar blog", data: '02/03/2024' },
@@ -22,42 +27,83 @@ const todasTarefas = [
 ]
 
 
+const tarefaSchema = joi.object({
+    nomeTarefa:joi.string().required(),
+    data:joi.date().required()
+})
+const validaTarefa = tarefaSchema.validate(tarefaSchema)
+
+// ---------------------------------------------------------------------------- cadastro
+
 server.post("/cadastrar", async (req, res) => {
     const usuario = req.body
 
+    const usuarioSchema = joi.object({
+        nome:joi.string().required(),
+        email:joi.string().email().required(),
+        senha:joi.string().required()
+    })
+
+    const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
+    usuario.senha = senhaCriptografada;
+    
+  
+
+    const {error} = usuarioSchema.validate(usuario, { abortEarly: false });
+    if (error) {
+      const erros = error.details.map((obj) => {
+            return obj.message
+      })
+      return res.status(422).send(erros)
+    }
+   
     try {
-        const cadastro = await usuarios.find(obj => obj.email === usuario.email)
+        const cadastro = await usuarios.find(obj => obj.email == usuario.email)
 
-        if (!usuario.nome || !usuario.email || !usuario.senha) {
-            return res.status(422).send('Preencha os campos corretamente')
-        }
-
-        if (cadastro) return res.status(404).send('Usuario já cadastrado')
-
+        if (cadastro) return res.status(409).send('Usuario já cadastrado')
+        
         usuarios.push(usuario)
         res.status(201).send('Usuario cadastrado com sucesso.')
 
+       
+console.log(usuarios)
 
     } catch (error) {
         res.status(500).send('Erro no servidor')
     }
 })
 
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------------- login
 
 server.post("/login", async (req, res) => {
     const usuario = req.body
 
+    const usuarioSchema = joi.object({
+        email:joi.string().email().required(),
+        senha:joi.string().required()
+    })
+
+    
+    const {error} = usuarioSchema.validate(usuario, { abortEarly: false });
+    if (error) {
+      const erros = error.details.map((obj) => {
+            return obj.message
+      })
+      return res.status(422).send(erros)
+    }
+
     try {
-        if (!usuario.email || !usuario.senha) {
-            return res.status(422).send('Preencha os campos corretamente')
-        }
+    
+        const verificaLogin =  usuarios.find(obj => obj.email === usuario.email)
+        if (!verificaLogin) return res.status(404).send('Usuario não encontrado')
 
-        const login = await usuarios.find(obj => obj.email == usuario.email && obj.senha == usuario.senha)
-
-        if (!login) return res.status(404).send('Usuario não encontrado')
+        
+        const senhaCriptografada = bcrypt.compareSync(usuario.senha, usuarios.find(obj =>{ obj.senha}) )
+        // const verificaSenha = usuarios.find(obj =>  obj.senha == senhaCriptografada )
+        if (!senhaCriptografada) return res.status(404).send('Usuario não encontrado')
 
         res.status(200).send('Usuario entrou')
+
     } catch (error) {
         res.status(500).send('Erro no servidor')
     }
