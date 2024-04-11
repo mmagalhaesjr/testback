@@ -2,6 +2,8 @@ import joi from "joi";
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 
+import { idUsuario, usuarios } from '../DataBase/db.js'
+
 
 export async function singup(req, res) {
     const usuario = req.body

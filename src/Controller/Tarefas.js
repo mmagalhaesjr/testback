@@ -1,5 +1,7 @@
 import joi from "joi";
 
+import {idUsuario, todasTarefas} from '../DataBase/db.js'
+
 
 export async function cadastrarTarefas(req, res) {
     const tarefa = req.body
