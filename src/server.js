@@ -3,6 +3,7 @@ import cors from "cors";
 
 import joi from "joi";
 import bcrypt from 'bcrypt'
+import { v4 as uuidv4 } from 'uuid';
 
 
 import dotenv from "dotenv";
@@ -15,9 +16,7 @@ server.use(express.json())
 
 
 
-const usuarios = [
-    { nome: "marcos", email: 'marcos@marcos.com', senha: 123 }
-]
+const usuarios = []
 
 
 const todasTarefas = [
@@ -58,15 +57,13 @@ server.post("/cadastrar", async (req, res) => {
     }
    
     try {
-        const cadastro = await usuarios.find(obj => obj.email == usuario.email)
+        const cadastro =  usuarios.find(obj => obj.email == usuario.email)
 
         if (cadastro) return res.status(409).send('Usuario já cadastrado')
         
         usuarios.push(usuario)
         res.status(201).send('Usuario cadastrado com sucesso.')
 
-       
-console.log(usuarios)
 
     } catch (error) {
         res.status(500).send('Erro no servidor')
@@ -77,6 +74,7 @@ console.log(usuarios)
 
 server.post("/login", async (req, res) => {
     const usuario = req.body
+    const token = uuidv4()
 
     const usuarioSchema = joi.object({
         email:joi.string().email().required(),
@@ -98,11 +96,11 @@ server.post("/login", async (req, res) => {
         if (!verificaLogin) return res.status(404).send('Usuario não encontrado')
 
         
-        const senhaCriptografada = bcrypt.compareSync(usuario.senha, usuarios.find(obj =>{ obj.senha}) )
-        // const verificaSenha = usuarios.find(obj =>  obj.senha == senhaCriptografada )
-        if (!senhaCriptografada) return res.status(404).send('Usuario não encontrado')
+        const senhaCorreta = bcrypt.compareSync(usuario.senha, verificaLogin.senha )
+        if (!senhaCorreta) return res.status(404).send('Usuario não encontrado')
 
-        res.status(200).send('Usuario entrou')
+        res.status(200).send(token)
+
 
     } catch (error) {
         res.status(500).send('Erro no servidor')
@@ -113,14 +111,22 @@ server.post("/login", async (req, res) => {
 // ----------------------------------------------------------------------------
 
 server.get("/todasTarefas", (req, res) => {
-   
-    try {
-        return res.send(todasTarefas)
-    } catch (error) {
-        res.status(500).send('Erro no servidor')
+    const { authorization } = req.headers
+
+    if (!authorization) {
+        return res.status(401).send('Token de autorização não fornecido');
     }
 
-})
+    const token = authorization.replace("Bearer", " ");
+    console.log(token);
+   
+    try {
+        return res.send(usuarios);
+
+    } catch (error) {
+        res.status(500).send('Erro no servidor');
+    }
+});
 
 // ----------------------------------------------------------------------------
 
@@ -128,7 +134,7 @@ server.get("/minhasTarefas/:id", async (req, res) => {
     const { id } = req.params
 
     try {
-        const tarefasUsuario = await todasTarefas.filter(obj => obj.id == id)
+        const tarefasUsuario = todasTarefas.filter(obj => obj.id == id)
         if (tarefasUsuario.length === 0) return res.send('Tarefa de usuario não encontrada')
 
         return res.send(tarefasUsuario.reverse())
