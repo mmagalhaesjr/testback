@@ -1,14 +1,13 @@
-import joi from "joi";
+
 
 import {idUsuario, todasTarefas} from '../DataBase/db.js'
+import {tarefaSchema} from '../Schema/TarefasSchema.js'
 
 
 export async function cadastrarTarefas(req, res) {
     const tarefa = req.body
 
-    const tarefaSchema = joi.object({
-        tarefa: joi.string().required(),
-    })
+  
 
     const { error } = tarefaSchema.validate(tarefa, { abortEarly: false });
     if (error) {

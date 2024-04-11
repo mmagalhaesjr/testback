@@ -1,25 +1,21 @@
-import joi from "joi";
+
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 
 import { idUsuario, usuarios } from '../DataBase/db.js'
+import{cadastroSchema, loginSchema} from '../Schema/AutenticarSchema.js'
 
 
 export async function singup(req, res) {
     const usuario = req.body
 
-    const usuarioSchema = joi.object({
-        nome: joi.string().required(),
-        email: joi.string().email().required(),
-        senha: joi.string().required()
-    })
-
+   
     const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
     usuario.senha = senhaCriptografada;
 
 
 
-    const { error } = usuarioSchema.validate(usuario, { abortEarly: false });
+    const { error } = cadastroSchema.validate(usuario, { abortEarly: false });
     if (error) {
         const erros = error.details.map((obj) => {
             return obj.message
@@ -51,13 +47,10 @@ export async function login(req, res) {
     const usuario = req.body
     const token = uuidv4()
 
-    const usuarioSchema = joi.object({
-        email: joi.string().email().required(),
-        senha: joi.string().required()
-    })
+  
 
 
-    const { error } = usuarioSchema.validate(usuario, { abortEarly: false });
+    const { error } = loginSchema.validate(usuario, { abortEarly: false });
     if (error) {
         const erros = error.details.map((obj) => {
             return obj.message
