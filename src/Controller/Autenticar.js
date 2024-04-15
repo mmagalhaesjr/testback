@@ -3,34 +3,35 @@ import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 
 import { idUsuario, usuarios } from '../DataBase/db.js'
-import{cadastroSchema, loginSchema} from '../Schema/AutenticarSchema.js'
+
+
 
 
 export async function singup(req, res) {
-    const usuario = req.body
+    //request, response: são solicitações HTTP. 
+    //req = são para receber dados do cliente
+    //res = são pra enviar dados para o cliente
 
-   
+    const usuario = req.body
+    //oque recebo do cliente
+
     const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
     usuario.senha = senhaCriptografada;
+    //criptografar senha
 
-
-
-    const { error } = cadastroSchema.validate(usuario, { abortEarly: false });
-    if (error) {
-        const erros = error.details.map((obj) => {
-            return obj.message
-        })
-        return res.status(422).send(erros)
-    }
-
+    
     try {
         const cadastro = usuarios.find(obj => obj.email == usuario.email)
-
+        //na variavel cadastro rece a informação de usuarios= body, vejo se no campo email existe o mesmo email cadastrado
         if (cadastro) return res.status(409).send('Usuario já cadastrado')
+        // caso exista recebo true, quer dizer que já existe o email especifico cadastrado
+        // caso cadastrado seja false, quer dizer que naõ existe um email igual cadastrado,
+        // o codigo e continuado
 
         const id = usuarios.length + 1 //implementando id no array
-        usuarios.push({ nome: usuario.nome, email: usuario.email, senha: usuario.senha, id: id })
 
+        //então permite cadastrar o usuario
+        usuarios.push({ nome: usuario.nome, email: usuario.email, senha: usuario.senha, id: id })
 
         res.status(201).send('Usuario cadastrado com sucesso.')
 
@@ -47,16 +48,14 @@ export async function login(req, res) {
     const usuario = req.body
     const token = uuidv4()
 
-  
 
-
-    const { error } = loginSchema.validate(usuario, { abortEarly: false });
-    if (error) {
-        const erros = error.details.map((obj) => {
-            return obj.message
-        })
-        return res.status(422).send(erros)
-    }
+    // const { error } = loginSchema.validate(usuario, { abortEarly: false });
+    // if (error) {
+    //     const erros = error.details.map((obj) => {
+    //         return obj.message
+    //     })
+    //     return res.status(422).send(erros)
+    // }
 
     try {
 
