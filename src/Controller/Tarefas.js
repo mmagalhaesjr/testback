@@ -1,6 +1,7 @@
 
 
 import { idUsuario, todasTarefas } from '../DataBase/db.js'
+import db from '../DataBase/db.js'
 import { tarefaSchema } from '../Schema/TarefasSchema.js'
 
 
@@ -12,8 +13,8 @@ export async function cadastrarTarefas(req, res) {
     console.log(token)
 
 
-    const id = todasTarefas.length + 1 //implementando id no array
-    todasTarefas.push({ tarefa, id: id, idUsuario: id })
+   
+    todasTarefas.push({ tarefa})
 
     try {
         const verificaToken = idUsuario.find(obj => obj.token === token);

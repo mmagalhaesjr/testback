@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 
 import { idUsuario, usuarios } from '../DataBase/db.js'
+import db from '../DataBase/db.js'
 
 
 
@@ -21,19 +22,23 @@ export async function singup(req, res) {
 
     
     try {
-        const cadastro = usuarios.find(obj => obj.email == usuario.email)
+        // const cadastro2 = usuarios.find(obj => obj.email == usuario.email)
+        const cadastro = db.query(`SELECT * FROM usuario where  ${emailclear == usuario.email }  `)
         //na variavel cadastro rece a informação de usuarios= body, vejo se no campo email existe o mesmo email cadastrado
         if (cadastro) return res.status(409).send('Usuario já cadastrado')
         // caso exista recebo true, quer dizer que já existe o email especifico cadastrado
         // caso cadastrado seja false, quer dizer que naõ existe um email igual cadastrado,
         // o codigo e continuado
 
-        const id = usuarios.length + 1 //implementando id no array
+       
 
         //então permite cadastrar o usuario
-        usuarios.push({ nome: usuario.nome, email: usuario.email, senha: usuario.senha, id: id })
+        const query = `INSERT INTO ${usuarios} (nome, email, senha) VALUES ($1, $2, $3) RETURNING *`;
+        const values = [nome, email, senha];
 
-        res.status(201).send('Usuario cadastrado com sucesso.')
+       
+       
+        res.status(201).send('foi')
 
 
     } catch (error) {
