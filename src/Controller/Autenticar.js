@@ -1,88 +1,69 @@
 
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
-
-import { idUsuario, usuarios } from '../DataBase/db.js'
 import db from '../DataBase/db.js'
 
 
 
 
-export async function singup(req, res) {
-    //request, response: são solicitações HTTP. 
-    //req = são para receber dados do cliente
-    //res = são pra enviar dados para o cliente
+export async function signup(req, res) {
+    // Recebe os dados do cliente
+    const usuario = req.body;
 
-    const usuario = req.body
-    //oque recebo do cliente
-
-    const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
-    usuario.senha = senhaCriptografada;
-    //criptografar senha
-
-    
     try {
-        // const cadastro2 = usuarios.find(obj => obj.email == usuario.email)
-        const cadastro = db.query(`SELECT * FROM usuario where  ${emailclear == usuario.email }  `)
-        //na variavel cadastro rece a informação de usuarios= body, vejo se no campo email existe o mesmo email cadastrado
-        if (cadastro) return res.status(409).send('Usuario já cadastrado')
-        // caso exista recebo true, quer dizer que já existe o email especifico cadastrado
-        // caso cadastrado seja false, quer dizer que naõ existe um email igual cadastrado,
-        // o codigo e continuado
+        // Verifica se o usuário já está cadastrado
+        const cadastro = await db.query('SELECT * FROM usuario WHERE email = $1', [usuario.email]);
+        if (cadastro.rows.length > 0) {
+            // Se o usuário já existe, retorna um erro 409 (Conflito)
+            return res.status(409).send('Usuário já cadastrado');
+        }
 
+        // Se for um usuario novo, criptografa a senha
+        const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
+        
+        // Insere o novo usuário no banco de dados
+        await db.query('INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)', [usuario.nome, usuario.email, senhaCriptografada]);
+
+        return res.status(201).send('Usuário cadastrado com sucesso');
        
-
-        //então permite cadastrar o usuario
-        const query = `INSERT INTO ${usuarios} (nome, email, senha) VALUES ($1, $2, $3) RETURNING *`;
-        const values = [nome, email, senha];
-
-       
-       
-        res.status(201).send('foi')
-
-
     } catch (error) {
-        res.status(500).send('Erro no servidor')
+        // Se ocorrer um erro, retorna um status 500 (Erro interno do servidor)
+        console.error('Erro no servidor:', error);
+        return res.status(500).send('Erro no servidor');
     }
 }
-
 // ---------------------------------------------------------------------------- 
 
 
 export async function login(req, res) {
-    const usuario = req.body
-    const token = uuidv4()
-
-
-    // const { error } = loginSchema.validate(usuario, { abortEarly: false });
-    // if (error) {
-    //     const erros = error.details.map((obj) => {
-    //         return obj.message
-    //     })
-    //     return res.status(422).send(erros)
-    // }
+    const usuario = req.body;
+    const token = uuidv4();
 
     try {
+        // Verifica se o usuário existe
+        const verificaEmail = await db.query(`SELECT * FROM usuario WHERE email = $1`, [usuario.email]);
+        if (verificaEmail.rows.length === 0) return res.status(404).send('Usuário não encontrado');
 
-        const verificaLogin = usuarios.find(obj => obj.email === usuario.email)
-        if (!verificaLogin) return res.status(404).send('Usuario não encontrado')
+        // Verifica se há uma sessão ativa para o usuário
+        const idUsuario = verificaEmail.rows[0].id;
+        const verificaSessao = await db.query(`SELECT * FROM sessao WHERE id_usuario = $1`, [idUsuario]);
 
-        const senhaCorreta = bcrypt.compareSync(usuario.senha, verificaLogin.senha)
-        if (!senhaCorreta) return res.status(404).send('Usuario não encontrado')
+        if (verificaSessao.rows.length > 0) {
+            // Se houver uma sessão ativa, exclua-a
+            await db.query(`DELETE FROM sessao WHERE id_usuario = $1`, [idUsuario]);
+        }
 
-        // idUsuario.push({idUsuario:verificaLogin.id, token})
-        const id = usuarios.length
-        idUsuario.push({ idUsuario: id, token })
+        // Insere o novo token na tabela de sessão
+        await db.query(`INSERT INTO sessao (id_usuario, token) VALUES ($1, $2)`, [idUsuario, token]);
 
-        // res.status(200).send(token)
-        res.status(200).send(idUsuario)
-        console.log(usuarios)
-
-
+        // Retorna sucesso
+        return res.status(200).send(token);
 
     } catch (error) {
-        res.status(500).send('Erro no servidor')
+        console.error('Erro no servidor:', error);
+        return res.status(500).send('Erro no servidor');
     }
-
 }
+
+
 

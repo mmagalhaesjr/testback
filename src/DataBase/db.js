@@ -15,9 +15,7 @@ if (process.env.MODE === 'prod') {
 export default db;
 
 
-export const todasTarefas = []
-export const usuarios = []
-export const idUsuario = []
+
 
 
 

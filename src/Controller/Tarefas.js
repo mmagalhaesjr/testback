@@ -1,67 +1,69 @@
-
-
-import { idUsuario, todasTarefas } from '../DataBase/db.js'
 import db from '../DataBase/db.js'
-import { tarefaSchema } from '../Schema/TarefasSchema.js'
 
 
 export async function cadastrarTarefas(req, res) {
     const tarefa = req.body
     const { authorization } = req.headers
 
+    // guarda somente os numeros do token, subistituindo o Bearer por vazio
     const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
-    console.log(token)
-
-
-   
-    todasTarefas.push({ tarefa})
 
     try {
-        const verificaToken = idUsuario.find(obj => obj.token === token);
-        if (!verificaToken) {
-            return res.status(401).send('Token inválido');
-        }
-        
-        return res.send(todasTarefas);
+        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
+        if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
+
+        await db.query(`INSERT INTO tarefas (id_usuario, tarefa) VALUES ($1, $2)`, [tokenBd.rows[0].id_usuario, tarefa.tarefa])
+
+        // return res.status(201).send(tokenBd);
+        return res.status(201).send('Tarefa Cadastrada!');
 
     } catch (error) {
-        res.status(500).send('Erro no servidor');
-
+        return res.status(500).send(error,'Erro no servidor')
     }
 }
 
 export async function encontrarTarefas(req, res) {
     const { authorization } = req.headers
-
+    // guarda somente os numeros do token, subistituindo o Bearer por vazio
     const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
-    console.log(token)
 
     try {
-        const verificaToken = idUsuario.find(obj => obj.token === token);
-        if (!verificaToken) {
-            return res.status(401).send('Token inválido');
-        }
+        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
+        if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
 
-        return res.send(todasTarefas);
+       const todasTarefas = await db.query(`SELECT * FROM tarefas`)
 
+       if (todasTarefas.rows.length === 0) return res.status(404).send('Não há tarefas cadastradas');
+
+
+        return res.status(200).send(todasTarefas.rows);
 
     } catch (error) {
-        res.status(500).send('Erro no servidor');
-
+        return res.status(500).send(error,'Erro no servidor')
     }
 }
 
 export async function tarefasId(req, res) {
     const { id } = req.params
+    const { authorization } = req.headers
 
-    try {
-        const tarefasUsuario = todasTarefas.filter(obj => obj.id == id)
-        if (tarefasUsuario.length === 0) return res.send('Tarefa de usuario não encontrada')
+     // guarda somente os numeros do token, subistituindo o Bearer por vazio
+     const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
 
-        return res.send(tarefasUsuario.reverse())
-    } catch (error) {
-        res.status(500).send('Erro no servidor')
-    }
+     try {
+         const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
+         if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
+        
+         const tarefasId = await db.query(`SELECT * FROM tarefas WHERE id_usuario = $1 `,[id])
+         if (tarefasId.rows.length === 0) return res.status(404).send('Não há tarefas cadastradas  com esse id');
+
+ 
+         return res.status(200).send(tarefasId.rows);
+ 
+     } catch (error) {
+         return res.status(500).send(error,'Erro no servidor')
+     }
+  
 }
 
 

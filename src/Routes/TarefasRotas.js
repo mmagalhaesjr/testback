@@ -10,6 +10,6 @@ tarefasRotas.post("/cadastrarTarefas",validarToken,validarDados(tarefaSchema),ca
 
 tarefasRotas.get("/todasTarefas", validarToken, encontrarTarefas)
 
-tarefasRotas.get("/minhasTarefas/:id",tarefasId)
+tarefasRotas.get("/minhasTarefas/:id", validarToken, tarefasId)
 
 export default tarefasRotas
