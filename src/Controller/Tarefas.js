@@ -18,7 +18,7 @@ export async function cadastrarTarefas(req, res) {
         return res.status(201).send('Tarefa Cadastrada!');
 
     } catch (error) {
-        return res.status(500).send(error,'Erro no servidor')
+        return res.status(500).send(error,'Ocorreu um erro interno. Por favor, tente novamente mais tarde. tare1');
     }
 }
 
@@ -31,7 +31,9 @@ export async function encontrarTarefas(req, res) {
         const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
         if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
 
-       const todasTarefas = await db.query(`SELECT * FROM tarefas`)
+       const todasTarefas = await db.query(`SELECT tarefas.*, usuario.nome 
+       FROM tarefas 
+       JOIN usuario ON tarefas.id_usuario = usuario.id;`)
 
        if (todasTarefas.rows.length === 0) return res.status(404).send('Não há tarefas cadastradas');
 
@@ -61,7 +63,8 @@ export async function tarefasId(req, res) {
          return res.status(200).send(tarefasId.rows);
  
      } catch (error) {
-         return res.status(500).send(error,'Erro no servidor')
+        return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde. tare2');
+
      }
   
 }
