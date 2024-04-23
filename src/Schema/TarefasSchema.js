@@ -1,5 +1,6 @@
 import joi from "joi";
 
 export const tarefaSchema = joi.object({
-    tarefa: joi.string().required(),
+    titulo: joi.string().required(),
+    descricao:joi.string().required(),
 })

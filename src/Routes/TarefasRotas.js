@@ -1,4 +1,4 @@
-import { cadastrarTarefas, encontrarTarefas, tarefasId } from "../Controller/Tarefas.js";
+import { cadastrarTarefas, deletarTarefa, encontrarTarefas, tarefasId } from "../Controller/Tarefas.js";
 import { Router } from "express";
 import { tarefaSchema } from "../Schema/TarefasSchema.js";
 import { validarDados } from '../Middleware/ValidarDados.js';
@@ -11,5 +11,7 @@ tarefasRotas.post("/cadastrarTarefas",validarToken,validarDados(tarefaSchema),ca
 tarefasRotas.get("/todasTarefas", validarToken, encontrarTarefas)
 
 tarefasRotas.get("/minhasTarefas/:id", validarToken, tarefasId)
+
+tarefasRotas.delete("/deletarTarefas/:id", validarToken, deletarTarefa)
 
 export default tarefasRotas

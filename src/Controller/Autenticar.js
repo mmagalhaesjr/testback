@@ -60,7 +60,7 @@ export async function login(req, res) {
         
 
         // Retorna sucesso
-        return res.status(200).send(token);
+        return res.status(200).send({token,idUsuario});
 
     } catch (error) {
         console.error('Erro no servidor:', error);
