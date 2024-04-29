@@ -6,10 +6,6 @@ import tarefasRotas from "./Routes/TarefasRotas.js";
 
 
 
-
-
-
-
 dotenv.config()
 
 
@@ -19,7 +15,6 @@ server.use(express.json())
 
 server.use(autenticarRotas)
 server.use(tarefasRotas)
-
 
 
 const PORTA = process.env.PORTA 
