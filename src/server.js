@@ -22,7 +22,7 @@ server.use(tarefasRotas)
 
 
 
-const PORTA = process.env.PORTA || 4002;
+const PORTA = process.env.PORTA 
 
 server.listen(PORTA, () => {
     console.log(`*** Servidor rodando na porta ${PORTA} ***`);
