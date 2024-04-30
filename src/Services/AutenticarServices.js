@@ -4,38 +4,27 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../DataBase/db.js'
 
 
-
-
-export async function signup(req, res) {
-    // Recebe os dados do cliente
-    const usuario = req.body;
-
-    try {
-        // Verifica se o usuário já está cadastrado
-        const cadastro = await db.query('SELECT * FROM usuario WHERE email = $1', [usuario.email]);
-        if (cadastro.rows.length > 0) {
-            // Se o usuário já existe, retorna um erro 409 (Conflito)
-            return res.status(409).send('Usuário já cadastrado');
-        }
-
-        // Se for um usuario novo, criptografa a senha
-        const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
-
-        // Insere o novo usuário no banco de dados
-        await db.query('INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)', [usuario.nome, usuario.email, senhaCriptografada]);
-
-        return res.status(201).send('Usuário cadastrado com sucesso');
-
-    } catch (error) {
-        // Se ocorrer um erro, retorna um status 500 (Erro interno do servidor)
-        console.error('Erro no servidor:', error);
-        return res.status(500).send(error, 'Ocorreu um erro interno. Por favor, tente novamente mais tarde. aut1');
+  
+async function signup(usuario) {
+    // Verifica se o usuário já está cadastrado
+    const cadastro = await db.query('SELECT * FROM usuario WHERE email = $1', [usuario.email]);
+    if (cadastro.rows.length > 0) {
+        throw new Error('Usuário já cadastrado');
     }
+
+    // Se for um usuário novo, criptografa a senha
+    const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
+
+    // Insere o novo usuário no banco de dados
+    await db.query('INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)', [usuario.nome, usuario.email, senhaCriptografada]);
 }
+
+  
+
 // ---------------------------------------------------------------------------- 
 
 
-export async function login(req, res) {
+ async function login(req, res) {
     const usuario = req.body;
     const token = uuidv4();
 
@@ -77,3 +66,7 @@ export async function login(req, res) {
 
 
 
+export default{
+    signup,
+    login
+}
