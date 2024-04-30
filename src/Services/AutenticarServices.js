@@ -1,30 +1,24 @@
-
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 import db from '../DataBase/db.js'
+import AutenticarRepositories from '../Repositories/AutenticarRepositories.js'
 
 
-  
 async function signup(usuario) {
-    // Verifica se o usuário já está cadastrado
-    const cadastro = await db.query('SELECT * FROM usuario WHERE email = $1', [usuario.email]);
-    if (cadastro.rows.length > 0) {
+    const { rowCount } = await AutenticarRepositories.verificaEmail(usuario);
+
+    if (rowCount > 0) {
         throw new Error('Usuário já cadastrado');
     }
 
-    // Se for um usuário novo, criptografa a senha
     const senhaCriptografada = await bcrypt.hash(usuario.senha, 10);
-
-    // Insere o novo usuário no banco de dados
-    await db.query('INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)', [usuario.nome, usuario.email, senhaCriptografada]);
+    await AutenticarRepositories.cadastrar({ nome: usuario.nome, email: usuario.email, senhaCriptografada });
 }
-
-  
 
 // ---------------------------------------------------------------------------- 
 
 
- async function login(req, res) {
+async function login(req, res) {
     const usuario = req.body;
     const token = uuidv4();
 
@@ -66,7 +60,7 @@ async function signup(usuario) {
 
 
 
-export default{
+export default {
     signup,
     login
 }

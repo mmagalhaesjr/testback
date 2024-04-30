@@ -1,4 +1,3 @@
-
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
 import db from '../DataBase/db.js'
@@ -6,7 +5,6 @@ import AutenticarServices from '../Services/AutenticarServices.js';
 
 
 
-// Controller
 async function signup(req, res) {
     const usuario = req.body;
 
@@ -14,16 +12,14 @@ async function signup(req, res) {
         await AutenticarServices.signup(usuario);
         return res.status(201).send('Usuário cadastrado com sucesso');
     } catch (error) {
-
-        if (error) {
+        if (error.message === 'Usuário já cadastrado') {
             return res.status(409).send('Usuário já cadastrado');
         }
-        
+
         console.error('Erro no serviço:', error.message);
         return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
     }
 }
-
 
 // ---------------------------------------------------------------------------- 
 
