@@ -6,7 +6,7 @@ import db from '../DataBase/db.js'
 
 
 
- async function signup(req, res) {
+export async function signup(req, res) {
     // Recebe os dados do cliente
     const usuario = req.body;
 
@@ -35,7 +35,7 @@ import db from '../DataBase/db.js'
 // ---------------------------------------------------------------------------- 
 
 
- async function login(req, res) {
+export async function login(req, res) {
     const usuario = req.body;
     const token = uuidv4();
 
@@ -77,7 +77,3 @@ import db from '../DataBase/db.js'
 
 
 
-export default{
-    signup,
-    login
-}
