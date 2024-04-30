@@ -1,24 +1,16 @@
 import db from '../DataBase/db.js'
+import TarefasServices from '../Services/TarefasServices.js';
 
 
- async function cadastrarTarefas(req, res) {
-    const tarefa = req.body
-    const { authorization } = req.headers
-
-    // guarda somente os numeros do token, subistituindo o Bearer por vazio
-    const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
+async function cadastrarTarefas(req, res) {
+    const tarefa = req.body;
+    const { authorization } = req.headers;
 
     try {
-        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
-        if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
-
-        await db.query(`INSERT INTO tarefas (id_usuario, titulo_tarefa, descricao_tarefa) VALUES ($1, $2, $3)`, [tokenBd.rows[0].id_usuario, tarefa.titulo, tarefa.descricao])
-
-        // return res.status(201).send(tokenBd);
+        await TarefasServices.cadastrarTarefa(tarefa, authorization)
         return res.status(201).send('Tarefa Cadastrada!');
-
     } catch (error) {
-        return res.status(500).send(error, 'Ocorreu um erro interno. Por favor, tente novamente mais tarde. tare1');
+        return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
     }
 }
 

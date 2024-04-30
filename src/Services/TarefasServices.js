@@ -1,28 +1,19 @@
 import db from '../DataBase/db.js'
+import TarefaRepositories from '../Repositories/TarefaRepositories.js';
 
 
-export async function cadastrarTarefas(req, res) {
-    const tarefa = req.body
-    const { authorization } = req.headers
 
-    // guarda somente os numeros do token, subistituindo o Bearer por vazio
-    const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
+async function cadastrarTarefa(tarefa, authorization) {
+    const token = authorization.replace("Bearer ", ""); // tem que ter um espaço após o Bearer
 
-    try {
-        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
-        if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
-
-        await db.query(`INSERT INTO tarefas (id_usuario, titulo_tarefa, descricao_tarefa) VALUES ($1, $2, $3)`, [tokenBd.rows[0].id_usuario, tarefa.titulo, tarefa.descricao])
-
-        // return res.status(201).send(tokenBd);
-        return res.status(201).send('Tarefa Cadastrada!');
-
-    } catch (error) {
-        return res.status(500).send(error, 'Ocorreu um erro interno. Por favor, tente novamente mais tarde. tare1');
+        const tokenBd = await TarefaRepositories.verificaToken(token);
+        if (tokenBd.rows.length === 0) {
+            throw new Error('Token inválido');
+        }
+        await TarefaRepositories.criarTarefa(tarefa, tokenBd);
     }
-}
 
-export async function encontrarTarefas(req, res) {
+ async function encontrarTarefas(req, res) {
     const { authorization } = req.headers
     // guarda somente os numeros do token, subistituindo o Bearer por vazio
     const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
@@ -45,7 +36,7 @@ export async function encontrarTarefas(req, res) {
     }
 }
 
-export async function tarefasId(req, res) {
+ async function tarefasId(req, res) {
     const { id } = req.params;
     const { authorization } = req.headers;
 
@@ -73,7 +64,7 @@ export async function tarefasId(req, res) {
     }
 }
 
-export async function deletarTarefa(req, res) {
+ async function deletarTarefa(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
     const { authorization } = req.headers;
 
@@ -98,7 +89,7 @@ export async function deletarTarefa(req, res) {
     }
 }
 
-export async function checkTarefas(req, res) {
+ async function checkTarefas(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
     const { authorization } = req.headers;
 
@@ -122,7 +113,7 @@ export async function checkTarefas(req, res) {
         return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
     }
 }
-export async function unCheckTarefas(req, res) {
+ async function unCheckTarefas(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
     const { authorization } = req.headers;
 
@@ -147,3 +138,11 @@ export async function unCheckTarefas(req, res) {
     }
 }
 
+export default{
+    cadastrarTarefa,
+    encontrarTarefas,
+    tarefasId,
+    deletarTarefa,
+    checkTarefas,
+    unCheckTarefas
+}
