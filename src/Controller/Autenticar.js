@@ -2,6 +2,7 @@ import AutenticarServices from '../Services/AutenticarServices.js';
 
 async function signup(req, res) {
     const usuario = req.body;
+    
 
     try {
         await AutenticarServices.signup(usuario);
