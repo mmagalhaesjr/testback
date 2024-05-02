@@ -21,10 +21,11 @@ async function signup(req, res) {
 
 async function login(req, res) {
     const usuario = req.body;
-
+   
     try {
-        const token = await AutenticarServices.login(usuario);
-        return res.status(200).send({ token });
+        const secao = await AutenticarServices.login(usuario);
+        return res.status(200).send(secao);
+
     } catch (error) {
         console.error('Erro no servidor:', error);
         return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');

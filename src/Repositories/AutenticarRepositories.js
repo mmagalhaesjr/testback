@@ -10,12 +10,6 @@ async function cadastrar(usuario) {
 }
 
 
-
-
-
-async function verificaUsuario(usuario) {
-    return await db.query(`SELECT * FROM usuario WHERE email = $1`, [usuario.email]);
-}
 async function verificaSessao(idUsuario) {
     const result = await db.query(`SELECT * FROM sessao WHERE id_usuario = $1`, [idUsuario]);
     return result.rows.length > 0;
@@ -35,8 +29,6 @@ async function deletaSecao(idUsuario) {
 export default{
     verificaEmail,
     cadastrar,
-
-    verificaUsuario,
     verificaSessao,
     inserirTokenSecao,
     deletaSecao

@@ -18,25 +18,25 @@ async function signup(usuario) {
 // ---------------------------------------------------------------------------- 
 
 async function login(usuario) {
-    const verificaUsuario = await AutenticarRepositories.verificaUsuario(usuario);
+    const verificaEmail = await AutenticarRepositories.verificaEmail(usuario);
 
-    if (!verificaUsuario.rows.length) {
+    if (!verificaEmail.rows.length) {
         throw new Error('Usuário não encontrado');
     }
 
-    const senhaHash = verificaUsuario.rows[0].senha;
+    const senhaHash = verificaEmail.rows[0].senha;
     const senhaCorreta = await bcrypt.compare(usuario.senha, senhaHash);
 
     if (!senhaCorreta) {
         throw new Error('Senha incorreta');
     }
 
-    const idUsuario = verificaUsuario.rows[0].id;
+    const idUsuario = verificaEmail.rows[0].id;
     const token = uuidv4();
 
     await AutenticarRepositories.inserirTokenSecao(idUsuario, token);
 
-    return token;
+    return {token, idUsuario};
 }
 
 
