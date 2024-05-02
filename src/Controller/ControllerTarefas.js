@@ -6,64 +6,60 @@ async function cadastrarTarefas(req, res) {
     const tarefa = req.body;
     const { authorization } = req.headers;
 
+
     try {
         await TarefasServices.cadastrarTarefa(tarefa, authorization)
         return res.status(201).send('Tarefa Cadastrada!');
+
     } catch (error) {
+       
+        if (error.message === 'Token inválido') {
+            return res.status(401).send(error.message);
+        }
         return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
     }
 }
 
- async function encontrarTarefas(req, res) {
-    const { authorization } = req.headers
-    // guarda somente os numeros do token, subistituindo o Bearer por vazio
-    const token = authorization.replace("Bearer ", "") // tem que ter um espaço apos o Bearer
 
+async function encontrarTarefas(req, res) {
+    const { authorization } = req.headers;
+   
     try {
-        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token])
-        if (tokenBd.rows.length === 0) return res.status(404).send('Token invalido');
-
-        const todasTarefas = await db.query(`SELECT tarefas.*, usuario.nome 
-       FROM tarefas 
-       JOIN usuario ON tarefas.id_usuario = usuario.id;`)
-
-        if (todasTarefas.rows.length === 0) return res.status(404).send('Não há tarefas cadastradas');
-
-
+        const todasTarefas = await TarefasServices.encontrarTarefas(authorization);
         return res.status(200).send(todasTarefas.rows);
 
     } catch (error) {
-        return res.status(500).send(error, 'Erro no servidor')
+        if (error.message === 'Token inválido') {
+            return res.status(401).send(error.message);
+
+        }else if(error.message === 'Não há tarefas cadastradas'){
+            return res.status(404).send(error.message);
+        }
+        return res.status(500).send('Erro no servidor');
     }
 }
 
- async function tarefasId(req, res) {
+
+async function tarefasId(req, res) {
     const { id } = req.params;
     const { authorization } = req.headers;
 
-    // guarda somente os números do token, substituindo o Bearer por vazio
-    const token = authorization.replace("Bearer ", ""); // tem que ter um espaço após o Bearer
-
     try {
-        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token]);
-        if (tokenBd.rows.length === 0) return res.status(404).send('Token inválido');
-
-        // Consulta para obter as tarefas do usuário logado com o nome do usuário
-        const tarefasUsuario = await db.query(`
-            SELECT tarefas.*, usuario.nome 
-            FROM tarefas 
-            JOIN usuario ON tarefas.id_usuario = usuario.id
-            WHERE tarefas.id_usuario = $1;
-        `, [id]);
-
-        if (tarefasUsuario.rows.length === 0) return res.status(404).send('Não há tarefas cadastradas para este usuário');
-
+        const tarefasUsuario = await TarefasServices.tarefasId(id, authorization);
         return res.status(200).send(tarefasUsuario.rows);
 
     } catch (error) {
-        return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
+            if (error.message === 'Token inválido') {
+                return res.status(401).send(error.message);
+
+            } else if (error.message === 'Não há tarefas cadastradas para este usuário') {
+                return res.status(404).send(error.message);
+            }
+        }
+
+        return res.status(500).send('Erro no servidor');
     }
-}
+
 
  async function deletarTarefa(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
