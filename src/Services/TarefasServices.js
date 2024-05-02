@@ -16,7 +16,6 @@ async function cadastrarTarefa(tarefa, authorization) {
 
 async function encontrarTarefas(authorization) {
 
-        if (!authorization) throw new Error('Token não fornecido');
         const token = authorization.replace("Bearer ", ""); // tem que ter um espaço apos o Bearer
         const tokenBd = await TarefaRepositories.verificaToken(token);
         if (tokenBd.rows.length === 0) throw new Error('Token inválido');
@@ -29,8 +28,7 @@ async function encontrarTarefas(authorization) {
 }
     
 async function tarefasId(id, authorization) {
-        if (!authorization) throw new Error('Token não fornecido');
-
+        
         const token = authorization.replace("Bearer ", "");
         const tokenBd = await TarefaRepositories.verificaToken(token);
 
@@ -45,10 +43,9 @@ async function tarefasId(id, authorization) {
 }
 
 async function deletarTarefa(id, authorization) {
-    if (!authorization) throw new Error('Token não fornecido');
+    
     const token = authorization.replace("Bearer ", "");
     const tokenBd = await TarefaRepositories.verificaToken(token);
-    console.log(tokenBd)
     if (tokenBd.rows.length === 0) throw new Error('Token inválido');
 
     const tarefasUsuario = await TarefaRepositories.selecionarTarefa(id, tokenBd);

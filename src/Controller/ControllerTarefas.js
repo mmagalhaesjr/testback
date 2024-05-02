@@ -61,7 +61,7 @@ async function tarefasId(req, res) {
     }
 
 
-    async function deletarTarefa(req, res) {
+async function deletarTarefa(req, res) {
         const { id } = req.params; // ID da tarefa a ser excluída
         const { authorization } = req.headers;
     
@@ -81,6 +81,7 @@ async function tarefasId(req, res) {
             }
         }
     }
+    
  async function checkTarefas(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
     const { authorization } = req.headers;
