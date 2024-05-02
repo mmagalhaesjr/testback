@@ -24,9 +24,19 @@ async function tarefasId(id){
 `, [id]);
 }
 
+async function selecionarTarefa(id, tokenBd) {
+    return await db.query(`SELECT * FROM tarefas WHERE id = $1 AND id_usuario = $2`, [id, tokenBd.rows[0].id_usuario]);
+}
+
+async function deletarTarefa(id) {
+    await db.query(`DELETE FROM tarefas WHERE id = $1`, [id]);
+}
+
 export default{
     verificaToken,
     cadastrarTarefa,
     encontrarTarefas,
-    tarefasId
+    tarefasId,
+    selecionarTarefa,
+    deletarTarefa
 }
