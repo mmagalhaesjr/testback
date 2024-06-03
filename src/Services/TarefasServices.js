@@ -68,7 +68,14 @@ async function deletarTarefa(id, authorization) {
 }
 
  async function unCheckTarefas(id, authorization) {
-   
+    const token = authorization.replace("Bearer ", "");
+    const tokenBd = await TarefaRepositories.verificaToken(token);
+    if (tokenBd.rows.length === 0) throw new Error('Token inválido');
+
+    const tarefasUsuario = await TarefaRepositories.selecionarTarefa(id, tokenBd);
+    if (tarefasUsuario.rows.length === 0) throw new Error('A tarefa não pertence a este usuário');
+
+    await TarefaRepositories.unCheckTarefas(id)
  }
 
 
