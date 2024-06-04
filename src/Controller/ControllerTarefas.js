@@ -109,25 +109,23 @@ async function deletarTarefa(req, res) {
     const { id } = req.params; // ID da tarefa a ser excluída
     const { authorization } = req.headers;
 
-    // guarda somente os números do token, substituindo o Bearer por vazio
-    const token = authorization.replace("Bearer ", ""); // tem que ter um espaço após o Bearer
-
     try {
-        const tokenBd = await db.query(`SELECT * FROM sessao WHERE token = $1`, [token]);
-        if (tokenBd.rows.length === 0) return res.status(404).send('Token inválido');
+        await TarefasServices.unCheckTarefas(id, authorization);
+        return res.status(200).send('Tarefa ativa');
+    } 
+    catch (error) {
+        if (error.message === 'Token inválido') {
+            return res.status(401).send(error.message);
 
-        // Verificar se a tarefa pertence ao usuário logado
-        const tarefasUsuario = await db.query(`SELECT * FROM tarefas WHERE id = $1 AND id_usuario = $2`, [id, tokenBd.rows[0].id_usuario]);
-        if (tarefasUsuario.rows.length === 0) return res.status(404).send('A tarefa não pertence a este usuário');
+        } else if (error.message === 'A tarefa não pertence a este usuário') {
+            return res.status(404).send(error.message);
 
-        // 
-        await db.query(`UPDATE tarefas SET tarefa = false WHERE id = $1`, [id]);
-
-        return res.status(200).send('Tarefa pendente');
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send('Ocorreu um erro interno. Por favor, tente novamente mais tarde.');
+        } else {
+            return res.status(500).send('Erro interno do servidor');
+        }
     }
+
+  
 }
 
 export default{

@@ -35,11 +35,11 @@ async function deletarTarefa(id) {
 }
 
 async function checkTarefas(id){
-    await db.query(`UPDATE tarefas SET tarefa = true WHERE id = $1`, [id]);
+    await db.query(`UPDATE tarefas SET concluida = true WHERE id = $1`, [id]);
 }
 
 async function unCheckTarefas(id){
-    await db.query(`UPDATE tarefas SET tarefa = false WHERE id = $1`, [id]);
+    await db.query(`UPDATE tarefas SET concluida = false WHERE id = $1`, [id]);
 }
 
 export default{
